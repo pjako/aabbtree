@@ -1,0 +1,5 @@
+name: aabb_tree
+description: A spartial Aabb Tree
+dependencies:
+  vector_math:
+    git: https://github.com/johnmccutchan/vector_math.git
