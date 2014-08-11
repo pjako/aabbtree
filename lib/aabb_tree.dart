@@ -1,163 +1,6 @@
 library aabb_tree;
 import 'package:vector_math/vector_math.dart';
 
-typedef AABBTreeRayTestResult(AabbTree tree, AabbTreeNode node, AABBTreeRay ray, double distance, double upperBound);
-
-
-/*class AABBTreeRayTestResult extends RayHit {
-  double factor;
-}*/
-
-
-class PriorityNode {
-  AabbTree tree;
-  int nodeIndex;
-  double distance;
-  PriorityNode(this.tree, this.nodeIndex, this.distance);
-}
-
-
-class AABBTreeRay {
-    Vector3 origin;    // v3
-    Vector3 direction; // v3
-    double maxFactor;
-}
-/*
-class NodeLink {
-  AabbTreeNode _node;
-  AabbTree _tree;
-  void update(Aabb3 newBounds) {
-    _tree._update( _node, newBounds);
-  }
-
-  void remove() {
-    _tree._remove(this);
-  }
-}
-*/
-typedef GetKey(AabbTreeNode node);
-
-
-double getkeyXfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return (extents.min.storage[0] + extents.max.storage[0]);
-}
-
-double getkeyYfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return (extents.min.storage[1] + extents.max.storage[1]);
-}
-
-double getkeyZfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return (extents.min.storage[2] + extents.max.storage[2]);
-}
-
-double getreversekeyXfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return -(extents.min.storage[0] + extents.max.storage[0]);
-}
-
-double getreversekeyYfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return -(extents.min.storage[1] + extents.max.storage[1]);
-}
-
-double getreversekeyZfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return -(extents.min.storage[2] + extents.max.storage[2]);
-}
-
-double getkeyXZfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return (extents.min.storage[0] + extents.min.storage[2] + extents.max.storage[0] + extents.max.storage[2]);
-}
-
-double getkeyZXfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return (extents.min.storage[0] - extents.min.storage[2] + extents.max.storage[0] - extents.max.storage[2]);
-}
-double getreversekeyXZfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return -(extents.min.storage[0] + extents.min.storage[2] + extents.max.storage[0] + extents.max.storage[2]);
-}
-
-double getreversekeyZXfn(AabbTreeNode node) {
-  var extents = node._extents;
-  return -(extents.min.storage[0] - extents.min.storage[2] + extents.max.storage[0] - extents.max.storage[2]);
-}
-
-
-//
-// AABBTreeNode
-//
-/*
-class ExternalAabbTreeNode {
-  int aabbTreeIndex;
-}
-*/
-/*
-class AabbTreeNode {
-  static const int version = 1;
-  int index;
-
-
-  int escapeNodeOffset;
-  NodeLink externalNode;//     : {};
-  Aabb3 extents; //          : any;
-
-  AabbTreeNode(Aabb3 extents, var escapeNodeOffset, [NodeLink externalNode] ) {
-    this.escapeNodeOffset = escapeNodeOffset;
-    this.externalNode = externalNode;
-    this.extents = extents;
-  }
-
-  bool isLeaf() {
-      return !!this.externalNode;
-  }
-
-  void reset(double minX, double minY, double minZ, double maxX, double maxY, double maxZ,
-      int escapeNodeOffset, [NodeLink externalNode]) {
-    this.escapeNodeOffset = escapeNodeOffset;
-    this.externalNode = externalNode;
-    Aabb3 oldExtents = this.extents;
-    oldExtents.min.storage[0] = minX;
-    oldExtents.min.storage[1] = minY;
-    oldExtents.min.storage[2] = minZ;
-    oldExtents.max.storage[0] = maxX;
-    oldExtents.max.storage[1] = maxY;
-    oldExtents.max.storage[2] = maxZ;
-  }
-
-  void clear() {
-    this.escapeNodeOffset = 1;
-    this.externalNode = null;
-    Aabb3 oldExtents = this.extents;
-    var maxNumber = double.MAX_FINITE;//Number.MAX_VALUE;
-    oldExtents.min.storage[0] = maxNumber;
-    oldExtents.min.storage[1] = maxNumber;
-    oldExtents.min.storage[2] = maxNumber;
-    oldExtents.max.storage[0] = -maxNumber;
-    oldExtents.max.storage[1] = -maxNumber;
-    oldExtents.max.storage[2] = -maxNumber;
-  }
-
-  // Constructor dynamic
-  /*static create(extents: any, escapeNodeOffset: number,
-                externalNode?: AABBTreeNode): AABBTreeNode
-  {
-      return new AABBTreeNode(extents, escapeNodeOffset, externalNode);
-  }*/
-}
-
-class rft {
-
-}
-
-class Test extends rft with ExternalAabbNode {
-
-}*/
-
 class AabbTreeNode {
   int _index;
   int index;
@@ -179,7 +22,7 @@ class AabbTreeNode {
   void _clear() {
     _escapeNodeOffset = 1;
     Aabb3 oldExtents = _extents;
-    var maxNumber = double.MAX_FINITE;//Number.MAX_VALUE;
+    final maxNumber = double.MAX_FINITE;//Number.MAX_VALUE;
     oldExtents.min.storage[0] = maxNumber;
     oldExtents.min.storage[1] = maxNumber;
     oldExtents.min.storage[2] = maxNumber;
@@ -280,18 +123,21 @@ class AabbTree<T extends AabbTreeNode> {
       }
 
     }
-/*
-    void remove(ExternalAabbTreeNode externalNode) {
-      var index = externalNode.aabbTreeIndex;
+
+    void remove(T externalNode) {
+      var index = externalNode._index;
       if (index != null) {
         if (_numExternalNodes  > 1) {
-            var nodes = this.nodes;
-            nodes[index].clear();
+            var nodes = this._nodes;
+            nodes[index]._clear();
             var endNode = _endNode;
             if ((index + 1) >= endNode) {
                 // No leaf
-                while (nodes[endNode - 1].externalNode == null) {
+                /*while (nodes[endNode - 1].externalNode == null) {
                     endNode -= 1;
+                }*/
+                while (nodes[endNode - 1] == null) {
+                  endNode -= 1;
                 }
                 _endNode = endNode;
             } else {
@@ -301,11 +147,11 @@ class AabbTree<T extends AabbTreeNode> {
         } else {
             this.clear();
         }
-        externalNode.aabbTreeIndex = null;
+        externalNode._index = null;
         //delete externalNode.aabbTreeIndex;
         }
     }
-*/
+
     AabbTreeNode _findParent(int nodeIndex) {
       var nodes = _nodes;
       var parentIndex = nodeIndex;
@@ -382,77 +228,6 @@ class AabbTree<T extends AabbTreeNode> {
         add(node, extents);
       }
     }
-/*
-    void update(ExternalAabbTreeNode externalNode, Aabb3 extents) {
-      int index = externalNode.aabbTreeIndex;
-      if (index != null) {
-        double min0 = extents.min.storage[0];
-        double min1 = extents.min.storage[1];
-        double min2 = extents.min.storage[2];
-        double max0 = extents.max.storage[0];
-        double max1 = extents.max.storage[1];
-        double max2 = extents.max.storage[2];
-
-        bool needsRebuild = _needsRebuild;
-        bool needsRebound = _needsRebound;
-        List<AabbTreeNode> nodes = _nodes;
-        AabbTreeNode node = nodes[index];
-        var nodeExtents = node.extents;
-
-        bool doUpdate = (needsRebuild || needsRebound ||
-                        nodeExtents.min.storage[0] > min0 ||
-                        nodeExtents.min.storage[1] > min1 ||
-                        nodeExtents.min.storage[2] > min2 ||
-                        nodeExtents.max.storage[0] < max0 ||
-                        nodeExtents.max.storage[1] < max1 ||
-                        nodeExtents.max.storage[2] < max2);
-
-        nodeExtents.min.storage[0] = min0;
-        nodeExtents.min.storage[1] = min1;
-        nodeExtents.min.storage[2] = min2;
-        nodeExtents.max.storage[0] = max0;
-        nodeExtents.max.storage[1] = max1;
-        nodeExtents.max.storage[2] = max2;
-
-        if (doUpdate) {
-          if (!needsRebuild && 1 < nodes.length) {
-            _numUpdates += 1;
-            if (_startUpdate  > index) {
-              _startUpdate  = index;
-            }
-            if (_endUpdate  < index) {
-              _endUpdate  = index;
-            }
-            if (!needsRebound) {
-              // force a rebound when things change too much
-              if ((2 * _numUpdates) > _numExternalNodes ) {
-                _needsRebound = true;
-              } else {
-                var parent = this.findParent(index);
-                Aabb3 parentExtents = parent.extents;
-                if (parentExtents.min.storage[0] > min0 ||
-                    parentExtents.min.storage[1] > min1 ||
-                    parentExtents.min.storage[2] > min2 ||
-                    parentExtents.max.storage[0] < max0 ||
-                    parentExtents.max.storage[1] < max1 ||
-                    parentExtents.max.storage[2] < max2) {
-                  _needsRebound = true;
-                }
-              }
-            } else {
-              // force a rebuild when things change too much
-              if (_numUpdates > (3 * _numExternalNodes )) {
-                _needsRebuild = true;
-                _numAdds = _numUpdates;
-              }
-            }
-          }
-        }
-      } else {
-        this.add(externalNode, extents);
-      }
-    }
-*/
     bool get needsFinalize => (_needsRebuild || _needsRebound);
 
     void finalize() {
@@ -1237,9 +1012,6 @@ class AabbTree<T extends AabbTreeNode> {
             p0 = extents.max.storage[0];
             p1 = extents.max.storage[1];
             p2 = extents.max.storage[2];
-            /*if(node is! _InternalTreeNode) {
-              node.drawBounds();
-            }*/
             //isInsidePlanesAABB
             isInside = true;
             n = 0;
@@ -1749,4 +1521,73 @@ class AabbTree<T extends AabbTreeNode> {
 
        return minimumResult;
      }
+}
+
+
+typedef AABBTreeRayTestResult(AabbTree tree, AabbTreeNode node, AABBTreeRay ray, double distance, double upperBound);
+
+class PriorityNode {
+  AabbTree tree;
+  int nodeIndex;
+  double distance;
+  PriorityNode(this.tree, this.nodeIndex, this.distance);
+}
+
+
+class AABBTreeRay {
+    Vector3 origin;    // v3
+    Vector3 direction; // v3
+    double maxFactor;
+}
+
+typedef GetKey(AabbTreeNode node);
+
+
+double getkeyXfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return (extents.min.storage[0] + extents.max.storage[0]);
+}
+
+double getkeyYfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return (extents.min.storage[1] + extents.max.storage[1]);
+}
+
+double getkeyZfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return (extents.min.storage[2] + extents.max.storage[2]);
+}
+
+double getreversekeyXfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return -(extents.min.storage[0] + extents.max.storage[0]);
+}
+
+double getreversekeyYfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return -(extents.min.storage[1] + extents.max.storage[1]);
+}
+
+double getreversekeyZfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return -(extents.min.storage[2] + extents.max.storage[2]);
+}
+
+double getkeyXZfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return (extents.min.storage[0] + extents.min.storage[2] + extents.max.storage[0] + extents.max.storage[2]);
+}
+
+double getkeyZXfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return (extents.min.storage[0] - extents.min.storage[2] + extents.max.storage[0] - extents.max.storage[2]);
+}
+double getreversekeyXZfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return -(extents.min.storage[0] + extents.min.storage[2] + extents.max.storage[0] + extents.max.storage[2]);
+}
+
+double getreversekeyZXfn(AabbTreeNode node) {
+  var extents = node._extents;
+  return -(extents.min.storage[0] - extents.min.storage[2] + extents.max.storage[0] - extents.max.storage[2]);
 }
